@@ -8,8 +8,10 @@ import 'package:google_place/src/search/search.dart';
 
 export 'package:google_place/src/autocomplete/autocomplete_prediction.dart';
 export 'package:google_place/src/autocomplete/autocomplete_response.dart';
+export 'package:google_place/src/autocomplete/autocomplete.dart';
 export 'package:google_place/src/details/details_response.dart';
 export 'package:google_place/src/details/details_result.dart';
+export 'package:google_place/src/details/details.dart';
 export 'package:google_place/src/models/address_component.dart';
 export 'package:google_place/src/models/bounds.dart';
 export 'package:google_place/src/models/close.dart';
@@ -39,6 +41,9 @@ export 'package:google_place/src/search/near_by_search_response.dart';
 export 'package:google_place/src/search/search_candidate.dart';
 export 'package:google_place/src/search/search_result.dart';
 export 'package:google_place/src/search/text_search_response.dart';
+export 'package:google_place/src/search/search.dart';
+export 'package:google_place/src/photos/photos.dart';
+export 'package:google_place/src/query_autocomplete/query_autocomplete.dart';
 
 /// The Places API is a service that returns information about places.
 /// Places are defined within this API as establishments, geographic locations, or prominent points of interest.
