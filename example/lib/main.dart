@@ -6,7 +6,7 @@ import 'package:google_place/google_place.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await DotEnv().load('.env');
+  await dotenv.load(fileName: '.env');
   runApp(MyApp());
 }
 
@@ -29,12 +29,12 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  GooglePlace googlePlace;
+  late GooglePlace googlePlace;
   List<AutocompletePrediction> predictions = [];
 
   @override
   void initState() {
-    String apiKey = DotEnv().env['API_KEY'];
+    String apiKey = dotenv.get('API_KEY');
     googlePlace = GooglePlace(apiKey);
     super.initState();
   }
@@ -90,14 +90,14 @@ class _HomePageState extends State<HomePage> {
                           color: Colors.white,
                         ),
                       ),
-                      title: Text(predictions[index].description),
+                      title: Text(predictions[index].description ?? ''),
                       onTap: () {
                         debugPrint(predictions[index].placeId);
                         Navigator.push(
                           context,
                           MaterialPageRoute(
                             builder: (context) => DetailsPage(
-                              placeId: predictions[index].placeId,
+                              placeId: predictions[index].placeId ?? '',
                               googlePlace: googlePlace,
                             ),
                           ),
@@ -122,17 +122,21 @@ class _HomePageState extends State<HomePage> {
     var result = await googlePlace.autocomplete.get(value);
     if (result != null && result.predictions != null && mounted) {
       setState(() {
-        predictions = result.predictions;
+        predictions = result.predictions ?? [];
       });
     }
   }
 }
 
 class DetailsPage extends StatefulWidget {
+  DetailsPage({
+    Key? key,
+    required this.placeId,
+    required this.googlePlace,
+  }) : super(key: key);
+
   final String placeId;
   final GooglePlace googlePlace;
-
-  DetailsPage({Key key, this.placeId, this.googlePlace}) : super(key: key);
 
   @override
   _DetailsPageState createState() =>
@@ -140,17 +144,17 @@ class DetailsPage extends StatefulWidget {
 }
 
 class _DetailsPageState extends State<DetailsPage> {
+  _DetailsPageState(this.placeId, this.googlePlace);
+
   final String placeId;
   final GooglePlace googlePlace;
 
-  _DetailsPageState(this.placeId, this.googlePlace);
-
-  DetailsResult detailsResult;
+  DetailsResult? detailsResult;
   List<Uint8List> images = [];
 
   @override
   void initState() {
-    getDetils(this.placeId);
+    getDetails(this.placeId);
     super.initState();
   }
 
@@ -164,7 +168,7 @@ class _DetailsPageState extends State<DetailsPage> {
       floatingActionButton: FloatingActionButton(
         backgroundColor: Colors.blueAccent,
         onPressed: () {
-          getDetils(this.placeId);
+          getDetails(this.placeId);
         },
         child: Icon(Icons.refresh),
       ),
@@ -220,19 +224,19 @@ class _DetailsPageState extends State<DetailsPage> {
                           ),
                         ),
                       ),
-                      detailsResult != null && detailsResult.types != null
+                      detailsResult != null && detailsResult!.types != null
                           ? Container(
                               margin: EdgeInsets.only(left: 15, top: 10),
                               height: 50,
                               child: ListView.builder(
                                 scrollDirection: Axis.horizontal,
-                                itemCount: detailsResult.types.length,
+                                itemCount: detailsResult!.types!.length,
                                 itemBuilder: (context, index) {
                                   return Container(
                                     margin: EdgeInsets.only(right: 10),
                                     child: Chip(
                                       label: Text(
-                                        detailsResult.types[index],
+                                        detailsResult!.types![index],
                                         style: TextStyle(
                                           color: Colors.white,
                                         ),
@@ -252,8 +256,8 @@ class _DetailsPageState extends State<DetailsPage> {
                           ),
                           title: Text(
                             detailsResult != null &&
-                                    detailsResult.formattedAddress != null
-                                ? 'Address: ${detailsResult.formattedAddress}'
+                                    detailsResult!.formattedAddress != null
+                                ? 'Address: ${detailsResult!.formattedAddress}'
                                 : "Address: null",
                           ),
                         ),
@@ -266,9 +270,9 @@ class _DetailsPageState extends State<DetailsPage> {
                           ),
                           title: Text(
                             detailsResult != null &&
-                                    detailsResult.geometry != null &&
-                                    detailsResult.geometry.location != null
-                                ? 'Geometry: ${detailsResult.geometry.location.lat.toString()},${detailsResult.geometry.location.lng.toString()}'
+                                    detailsResult!.geometry != null &&
+                                    detailsResult!.geometry!.location != null
+                                ? 'Geometry: ${detailsResult!.geometry!.location!.lat.toString()},${detailsResult!.geometry!.location!.lng.toString()}'
                                 : "Geometry: null",
                           ),
                         ),
@@ -281,8 +285,8 @@ class _DetailsPageState extends State<DetailsPage> {
                           ),
                           title: Text(
                             detailsResult != null &&
-                                    detailsResult.utcOffset != null
-                                ? 'UTC offset: ${detailsResult.utcOffset.toString()} min'
+                                    detailsResult!.utcOffset != null
+                                ? 'UTC offset: ${detailsResult!.utcOffset.toString()} min'
                                 : "UTC offset: null",
                           ),
                         ),
@@ -295,8 +299,8 @@ class _DetailsPageState extends State<DetailsPage> {
                           ),
                           title: Text(
                             detailsResult != null &&
-                                    detailsResult.rating != null
-                                ? 'Rating: ${detailsResult.rating.toString()}'
+                                    detailsResult!.rating != null
+                                ? 'Rating: ${detailsResult!.rating.toString()}'
                                 : "Rating: null",
                           ),
                         ),
@@ -309,8 +313,8 @@ class _DetailsPageState extends State<DetailsPage> {
                           ),
                           title: Text(
                             detailsResult != null &&
-                                    detailsResult.priceLevel != null
-                                ? 'Price level: ${detailsResult.priceLevel.toString()}'
+                                    detailsResult!.priceLevel != null
+                                ? 'Price level: ${detailsResult!.priceLevel.toString()}'
                                 : "Price level: null",
                           ),
                         ),
@@ -330,7 +334,7 @@ class _DetailsPageState extends State<DetailsPage> {
     );
   }
 
-  void getDetils(String placeId) async {
+  void getDetails(String placeId) async {
     var result = await this.googlePlace.details.get(placeId);
     if (result != null && result.result != null && mounted) {
       setState(() {
@@ -338,16 +342,16 @@ class _DetailsPageState extends State<DetailsPage> {
         images = [];
       });
 
-      if (result.result.photos != null) {
-        for (var photo in result.result.photos) {
-          getPhoto(photo.photoReference);
+      if (result.result?.photos != null) {
+        for (var photo in result.result!.photos!) {
+          getPhoto(photo.photoReference ?? '');
         }
       }
     }
   }
 
   void getPhoto(String photoReference) async {
-    var result = await this.googlePlace.photos.get(photoReference, null, 400);
+    var result = await this.googlePlace.photos.get(photoReference, 0, 400);
     if (result != null && mounted) {
       setState(() {
         images.add(result);
